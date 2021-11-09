@@ -47,10 +47,10 @@ export class InnovationSandbox extends cdk.Stack {
 
     const mgmt_email = new cdk.CfnParameter(
       this,
-      "Appstream Management Account Email",
+      "Sandbox Management Account Email",
       {
         type: "String",
-        description: "Email for Appstream Management Account",
+        description: "Email for Sandbox Management Account",
       }
     );
 
@@ -66,10 +66,28 @@ export class InnovationSandbox extends cdk.Stack {
 
     const mgmt_ou_name = new cdk.CfnParameter(
       this,
-      "Appstream Management OU Name",
+      "Sandbox Management OU Name",
       {
         type: "String",
-        description: "OU Name for Appstream Management Account",
+        description: "OU Name for Sandbox Management Account",
+      }
+    );
+
+    const mgmt_cidr = new cdk.CfnParameter(
+      this,
+      "Sandbox Management VPC CIDR",
+      {
+        type: "String",
+        description: "VPC CIDR for Appstream Management Account",
+      }
+    );
+
+    const sbx_cidr = new cdk.CfnParameter(
+      this,
+      "Sandbox VPC CIDR",
+      {
+        type: "String",
+        description: "VPC CIDR for Sandbox Account",
       }
     );
 
@@ -170,6 +188,9 @@ export class InnovationSandbox extends cdk.Stack {
           Sbx_Email: sbx_email.valueAsString,
           Sbx_OU_Name: sbx_ou_name.valueAsString,
           Mgmt_OU_Name: mgmt_ou_name.valueAsString,
+          Mgmt_CIDR: mgmt_cidr.valueAsString,
+          Sbx_CIDR: sbx_cidr.valueAsString,
+        
         },
       }
     );
