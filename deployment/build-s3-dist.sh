@@ -72,7 +72,7 @@ npm run cdk --version
 echo "cd $source_dir"
 cd $source_dir
 echo "npm install -g aws-cdk@$cdk_version"
-npm install -g aws-cdk
+# npm install -g aws-cdk
 
 echo "------------------------------------------------------------------------------"
 echo "NPM Install in the source folder"

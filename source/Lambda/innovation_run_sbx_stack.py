@@ -51,7 +51,14 @@ def get_transit_gateway_id_mgmt(credentials):
                        )
     vpcs = ec2.describe_vpcs()
     vpc_id = vpcs["Vpcs"][0]["VpcId"]
-    tgws = ec2.describe_transit_gateways()
+    tgws = ec2.describe_transit_gateways(
+            Filters=[{
+            'Name': 'state',
+            'Values': [
+                'available'
+            ]},
+            ],
+        )
     tgw = tgws['TransitGateways'][0]['TransitGatewayId']
     tgw_attchs = ec2.describe_transit_gateway_attachments()
     tgw_attch_id = tgw_attchs['TransitGatewayAttachments'][0]['TransitGatewayAttachmentId']
@@ -72,6 +79,8 @@ def create(event, context):
         eip2 = props['EIP2']
         tgw_id = props['Tgw_ID']
         tb = props['Template_Base_Path']
+        mgmt_cidr = props['Mgmt_CIDR']
+        sbx_cidr = props['Sandbox_CIDR']
 
         credentials_sbx = assume_role(sbx)
 
@@ -100,6 +109,14 @@ def create(event, context):
             {
                 'ParameterKey': 'EIP2',
                 'ParameterValue': eip2
+            },
+            {
+                'ParameterKey': 'MgmtCidr',
+                'ParameterValue': mgmt_cidr
+            },
+            {
+                'ParameterKey': 'SbxCidr',
+                'ParameterValue': sbx_cidr
             }
         ], 'InnovationSbxSBXStack')
 

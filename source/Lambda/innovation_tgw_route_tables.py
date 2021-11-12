@@ -54,6 +54,8 @@ def create(event, context):
         egress_attach_id = props['Egress_Attach']
         sbx_attach_id = props['Sbx_Attach']
         tb = props['Template_Base_Path']
+        mgmt_cidr = props['Mgmt_CIDR']
+        sbx_cidr = props['Sandbox_CIDR']
     
         credentials = assume_role(mgmt)
 
@@ -70,7 +72,16 @@ def create(event, context):
         {
             'ParameterKey': 'SBXTGATTCH',
             'ParameterValue': sbx_attach_id
-        }
+        },
+            {
+                'ParameterKey': 'MgmtCidr',
+                'ParameterValue': mgmt_cidr
+            },
+            {
+                'ParameterKey': 'SbxCidr',
+                'ParameterValue': sbx_cidr
+            }
+
         ],'InnovationMgmtTGWStack')
     
         responseData = {"Message":"Successfly Deployed Innovation Architecture"}

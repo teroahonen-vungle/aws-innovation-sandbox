@@ -25,7 +25,15 @@ export class InnovationSandboxTransitGatewaySetup extends cdk.Stack {
       description: "SBXTGATTCH"
     });
 
+    const MgmtCidr = new cdk.CfnParameter(this, "MgmtCidr", {
+      type: "String",
+      description: "MgmtCidr"
+    });
 
+    const SbxCidr = new cdk.CfnParameter(this, "SbxCidr", {
+      type: "String",
+      description: "SbxCidr"
+    });
     
     const TGRouteTableTowardsSBX = new ec2.CfnTransitGatewayRouteTable(this, "RouteTowardsSBX", {
       transitGatewayId: TGID.valueAsString,
@@ -37,7 +45,7 @@ export class InnovationSandboxTransitGatewaySetup extends cdk.Stack {
     const TransitGatewayRouteTableTowardsSBX = new ec2.CfnTransitGatewayRoute(this, "RouteFromEgressVPCToSbxForCallBack", {
       transitGatewayRouteTableId: TGRouteTableTowardsSBX.ref,
       transitGatewayAttachmentId: SBXTGATTCH.valueAsString,
-      destinationCidrBlock: "192.168.0.0/16"
+      destinationCidrBlock: SbxCidr.valueAsString
     });
     const TGRouteTableAssociationForEGRESSVPC = new ec2.CfnTransitGatewayRouteTableAssociation(this, 'AssocForEgressVPC', {
       transitGatewayAttachmentId: EGREEATTCH.valueAsString,

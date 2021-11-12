@@ -29,7 +29,7 @@ export class InnovationSandbox extends cdk.Stack {
 
     const mgmt_account_name = new cdk.CfnParameter(
       this,
-      "Appstream Management Account Name",
+      "Sandbox Management Account Name",
       {
         type: "String",
         description: "Account Name for Appstream Management Account",
@@ -201,6 +201,9 @@ export class InnovationSandbox extends cdk.Stack {
     var _Mgmt = create_account_ou.getAtt("Appstream_Account_ID").toString();
     var _Sbx = create_account_ou.getAtt("Sandbox_Account_ID").toString();
     var _Sbx_OU = create_account_ou.getAtt("Sandbox_OU").toString();
+    var _SbxCIDR = sbx_cidr.valueAsString;
+    var _MgmtCIDR = mgmt_cidr.valueAsString;
+
     var S3_Templates_Base_Path = "https://"+props["solutionBucket"] + '-' + this.region+".s3.amazonaws.com/"+props["solutionTradeMarkName"] + '/' + props["solutionVersion"]+"/";
 
 
@@ -327,6 +330,8 @@ export class InnovationSandbox extends cdk.Stack {
         properties: {
           Appstream_Account_ID: _Mgmt,
           Sandbox_Account_ID: _Sbx,
+          Sandbox_CIDR: _SbxCIDR,
+          Mgmt_CIDR: _MgmtCIDR,
           Template_Base_Path: S3_Templates_Base_Path
         },
       }
@@ -465,6 +470,8 @@ export class InnovationSandbox extends cdk.Stack {
           Tgw_ID: _Tgw_ID,
           EIP: _EIP,
           EIP2: _EIP2,
+          Sandbox_CIDR: _SbxCIDR,
+          Mgmt_CIDR: _MgmtCIDR,
           Template_Base_Path: S3_Templates_Base_Path
         },
       }
@@ -534,7 +541,9 @@ export class InnovationSandbox extends cdk.Stack {
           Tgw_ID: _Tgw_ID,
           Egress_Attach: _Egress_Attach_ID,
           Sbx_Attach: _Sbx_Attach_ID,
-          Template_Base_Path: S3_Templates_Base_Path
+          Template_Base_Path: S3_Templates_Base_Path,
+          Sandbox_CIDR: _SbxCIDR,
+          Mgmt_CIDR: _MgmtCIDR,
         },
       }
     );

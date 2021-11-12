@@ -40,13 +40,23 @@ export class InnovationSandboxSbxAccount extends cdk.Stack {
       description: "EIP",
     });
 
+    const MgmtCidr = new cdk.CfnParameter(this, "MgmtCidr", {
+      type: "String",
+      description: "MgmtCidr"
+    });
+
+    const SbxCidr = new cdk.CfnParameter(this, "SbxCidr", {
+      type: "String",
+      description: "SbxCidr"
+    });
+
     // const tgw_rt_id = new cdk.CfnParameter(this, "TgwRTID", {
     //     type: "String",
     //     description: "TgwRTID"
     //   });
 
     const vpc_sbx = new ec2.Vpc(this, "ISSBXVPC", {
-      cidr: "192.168.0.0/16",
+      cidr: "10.10.4.0/23",
       maxAzs: 1,
       subnetConfiguration: [
         {
@@ -103,21 +113,10 @@ export class InnovationSandboxSbxAccount extends cdk.Stack {
       Version: "2012-10-17",
       Statement: [
         {
-          Sid: "AllowAppStreamIPs",
+          Sid: "AllowAll",
           Effect: "Allow",
           Action: "*",
-          Resource: "*",
-          Condition: {
-            IpAddress: {
-              "aws:SourceIp": [
-                _eip.valueAsString,
-                _eip2.valueAsString,
-                "10.0.0.0/16",
-                "172.16.0.0/12",
-                "192.168.0.0/16",
-              ],
-            },
-          },
+          Resource: "*"
         },
         {
           Sid: "AllowAWSServiceCalls",

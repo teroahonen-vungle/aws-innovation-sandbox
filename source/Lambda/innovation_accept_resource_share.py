@@ -3,6 +3,7 @@ import time
 from boto3.session import Session
 import sys, traceback
 import json
+import uuid
 import requests
 from botocore.config import Config
 import logging
@@ -72,7 +73,7 @@ def accept_resource_share_sbx(credentials):
     try:
         accept_inv = client.accept_resource_share_invitation(
             resourceShareInvitationArn=rs_arn,
-            clientToken='xyz_abcd9991'
+            clientToken=str(uuid.uuid4()).replace('-', '')
         )
     except Exception as e:
         message = {'MESSAGE': 'Unable to accept TGW resource share invitation in the Sandbox Account', 'FILE': __file__.split('/')[-1], 

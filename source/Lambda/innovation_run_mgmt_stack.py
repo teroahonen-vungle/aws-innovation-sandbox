@@ -37,7 +37,15 @@ def get_transit_gateway_id_mgmt(credentials):
                        config=config
                        )
         vpcs = ec2.describe_vpcs()
-        tgws = ec2.describe_transit_gateways()
+        tgws = ec2.describe_transit_gateways(
+            Filters=[{
+            'Name': 'state',
+            'Values': [
+                'available'
+            ]},
+            ],
+        )
+
         tgw = tgws['TransitGateways'][0]['TransitGatewayId']
         tgw_attchs = ec2.describe_transit_gateway_attachments()
         tgw_attch_id = tgw_attchs['TransitGatewayAttachments'][0]['TransitGatewayAttachmentId']
@@ -84,7 +92,9 @@ def create(event, context):
         appstream_act_id= props['Appstream_Account_ID']
         sbx_act_id = props['Sandbox_Account_ID']
         tb = props['Template_Base_Path']
-
+        mgmt_cidr = props['Mgmt_CIDR']
+        sbx_cidr = props['Sandbox_CIDR']
+        
         credentials = assume_role(appstream_act_id)
 
         s3_public_settings(appstream_act_id, credentials)
@@ -94,6 +104,14 @@ def create(event, context):
             appstream_act_id, tb + "InnovationSandboxManagementAccount.template", credentials, [{
                 'ParameterKey': 'SbxAccountId',
                 'ParameterValue': sbx_act_id
+            },
+            {
+                'ParameterKey': 'MgmtCidr',
+                'ParameterValue': mgmt_cidr
+            },
+            {
+                'ParameterKey': 'SbxCidr',
+                'ParameterValue': sbx_cidr
             },
                 {
                     'ParameterKey': 'UUID',

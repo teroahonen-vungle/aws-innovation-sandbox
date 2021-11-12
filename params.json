@@ -1,0 +1,43 @@
+[
+  {
+      "ParameterKey": "SandboxManagementAccountName",
+      "ParameterValue": "sbx7m",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxManagementOUName",
+      "ParameterValue": "sbx7m",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxManagementAccountEmail",
+      "ParameterValue": "tero+sbx7m@calevala.com",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxAccountName",
+      "ParameterValue": "sbx7",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxOUName",
+      "ParameterValue": "sbx7",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxAccountEmail",
+      "ParameterValue": "tero+sbx7@calevala.com",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxManagementVPCCIDR",
+      "ParameterValue": "10.10.0.0/22",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxVPCCIDR",
+      "ParameterValue": "10.10.4.0/23",
+      "UsePreviousValue": false
+  } 
+]
+

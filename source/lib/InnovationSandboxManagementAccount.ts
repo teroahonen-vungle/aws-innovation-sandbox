@@ -25,6 +25,16 @@ export class InnovationSandboxManagementAccount extends cdk.Stack {
       description: "SbxAccountId"
     });
 
+    const MgmtCidr = new cdk.CfnParameter(this, "MgmtCidr", {
+      type: "String",
+      description: "MgmtCidr"
+    });
+
+    const SbxCidr = new cdk.CfnParameter(this, "SbxCidr", {
+      type: "String",
+      description: "SbxCidr"
+    });
+
     // TODO: Add descriptions
 
     const _uuid = new cdk.CfnParameter(this, "UUID", {
@@ -37,7 +47,7 @@ export class InnovationSandboxManagementAccount extends cdk.Stack {
    
 
     const vpc = new ec2.Vpc(this, 'ISAppStreamMgmtVPC', {
-      cidr: "10.0.0.0/16",
+      cidr: "10.10.0.0/22",
       maxAzs: 2,
       subnetConfiguration: [
         {
@@ -82,7 +92,7 @@ export class InnovationSandboxManagementAccount extends cdk.Stack {
     for (let subnet of vpc.publicSubnets) {
       new ec2.CfnRoute(this, subnet.node.uniqueId, {
         routeTableId: subnet.routeTable.routeTableId,
-        destinationCidrBlock: "192.168.0.0/16",
+        destinationCidrBlock: SbxCidr.valueAsString,
         transitGatewayId: TransitGateway.ref,
       }).addDependsOn(TransitGatewayAttachmentEgress);
     };
