@@ -31,11 +31,11 @@ def delete(event, context):
     props = event["ResourceProperties"]
     
     mgmt = props['Appstream_Account_ID']
-    
+    sbx = props['Sandbox_Account_ID']
     credentials = assume_role(mgmt)
 
     try:
-        delete_stack('InnovationMgmtTGWStack', credentials)
+        delete_stack('SbxMgmtTGWStack-'+sbx, credentials)
     except Exception as e:
         raise
 
@@ -50,12 +50,14 @@ def create(event, context):
         props = event["ResourceProperties"]
     
         mgmt = props['Appstream_Account_ID']
+        sbx = props['Sandbox_Account_ID']
         tgw_id = props['Tgw_ID']
         egress_attach_id = props['Egress_Attach']
         sbx_attach_id = props['Sbx_Attach']
         tb = props['Template_Base_Path']
         mgmt_cidr = props['Mgmt_CIDR']
         sbx_cidr = props['Sandbox_CIDR']
+        
     
         credentials = assume_role(mgmt)
 
@@ -82,7 +84,7 @@ def create(event, context):
                 'ParameterValue': sbx_cidr
             }
 
-        ],'InnovationMgmtTGWStack')
+        ],'SbxMgmtTGWStack-'+sbx)
     
         responseData = {"Message":"Successfly Deployed Innovation Architecture"}
     

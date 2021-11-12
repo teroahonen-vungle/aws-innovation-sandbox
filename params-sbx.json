@@ -1,0 +1,33 @@
+[
+  {
+      "ParameterKey": "ManagementAccountID",
+      "ParameterValue": "622907171312",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxAccountName",
+      "ParameterValue": "sbx9",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxOUName",
+      "ParameterValue": "sbx9",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxAccountEmail",
+      "ParameterValue": "tero+sbx9@calevala.com",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxManagementVPCCIDR",
+      "ParameterValue": "10.10.0.0/22",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxVPCCIDR",
+      "ParameterValue": "10.10.6.0/23",
+      "UsePreviousValue": false
+  } 
+]
+

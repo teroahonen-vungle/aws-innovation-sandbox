@@ -34,6 +34,10 @@ export class InnovationSandboxManagementAccount extends cdk.Stack {
       type: "String",
       description: "SbxCidr"
     });
+    const TgwId = new cdk.CfnParameter(this, "TgwId", {
+      type: "String",
+      description: "Transit Gateway ID"
+    });
 
     // TODO: Add descriptions
 
@@ -45,7 +49,7 @@ export class InnovationSandboxManagementAccount extends cdk.Stack {
     
 
    
-
+/*
     const vpc = new ec2.Vpc(this, 'ISAppStreamMgmtVPC', {
       cidr: "10.10.0.0/22",
       maxAzs: 2,
@@ -62,8 +66,8 @@ export class InnovationSandboxManagementAccount extends cdk.Stack {
         }
       ]
     });
-
-
+*/
+/*
     //Create TG gateway
     const TransitGateway = new ec2.CfnTransitGateway(this, 'IS_Transit_Gateway', {
       description: "IS Transit Gateway",
@@ -97,13 +101,14 @@ export class InnovationSandboxManagementAccount extends cdk.Stack {
       }).addDependsOn(TransitGatewayAttachmentEgress);
     };
 
-   
+*/   
     const res_share = new ram.CfnResourceShare(this, "ISTGWShareAppStream",{
       principals:[SbxAccountId.valueAsString],
-      resourceArns:[cdk.Fn.sub("arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:transit-gateway/${ISTransitGateway}")],
-      name:"ISTGWShareAppStream"
+      resourceArns:[cdk.Fn.sub("arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:transit-gateway/${TgwId}")],
+      //resourceArns:[cdk.Fn.sub("arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:transit-gateway/${ISTransitGateway}")],
+      name:"ISTGWShareAppStream-" + SbxAccountId.valueAsString
     })
-
+/*
     const trail_bucket_access_logs = new s3.Bucket(this, "mgmt-bucket-al", {
       bucketName: "mgmt" + "-ct-" + _uuid.valueAsString+"-al",
       encryption: s3.BucketEncryption.S3_MANAGED,
@@ -182,7 +187,7 @@ export class InnovationSandboxManagementAccount extends cdk.Stack {
       destination: ec2.FlowLogDestination.toS3(fl_bucket),
     });
 
-
+*/
 
   }
 

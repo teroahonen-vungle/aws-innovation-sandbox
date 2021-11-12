@@ -67,6 +67,9 @@ def create(event, context):
         scp_guardrails = create_scp_sbx(client, scp_gd, tb, 'innovation_sbx_guardrails_scp.json')
         scp_network = create_scp_sbx(client, scp_ntwrk, tb, 'innovation_sbx_network_controls_scp.json')
 
+        logger.info("scp_guardrails: "+scp_guardrails)
+        logger.info("scp_network: "+scp_network)
+
         client.attach_policy(PolicyId=scp_guardrails, TargetId=sbx_ou)
         client.attach_policy(PolicyId=scp_network, TargetId=sbx_ou)
 

@@ -322,23 +322,16 @@ def create(event, context):
 
     try:
         props = event["ResourceProperties"]
-
-        appstream_act = props['Appstream_Account_ID']
-
         sbx_act = props['Sandbox_Account_ID']
     
-        credentials = assume_role(appstream_act)
-    
-        delete_default_VPC(credentials)
-    
+        
         credentials_sbx = assume_role(sbx_act)
     
         delete_default_VPC(credentials_sbx)
         
         responseData = {
-            "Appstream_Account_ID" : appstream_act,
             "Sandbox_Account_ID" : sbx_act
-            }
+        }
     
         send(event, context, SUCCESS,
                          responseData, "Delete_Default_VPCs")

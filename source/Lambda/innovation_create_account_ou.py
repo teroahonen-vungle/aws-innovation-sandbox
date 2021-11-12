@@ -179,35 +179,25 @@ def validate_inputs(mgmt_name, sbx_name, mgmt_email, sbx_email, mgmt_ou, sbx_ou,
 
 def create(event, context):
 
-    logger.info("Creating Appstream and Sandbox Accounts")
+    logger.info("Creating Sandbox Account")
     logger.info(event)
 
     props = event["ResourceProperties"]
 
-    mgmt_name = props["Mgmt_Name"]
     sbx_name = props["Sbx_Name"]
-    mgmt_email = props["Mgmt_Email"]
     sbx_email = props["Sbx_Email"]
     sbx_ou = props["Sbx_OU_Name"]
-    mgmt_ou = props["Mgmt_OU_Name"]
-
+    
     try:
         organizations = boto3.client('organizations', config=config)
 
         root = organizations.list_roots()["Roots"][0]["Id"]
-
-        validate_inputs(mgmt_name, sbx_name, mgmt_email, sbx_email, mgmt_ou, sbx_ou, organizations, root)
-
-        appstream_act_id = create_account(organizations, mgmt_name, mgmt_email)
-
-        appstream_ou = create_ou_move_act(organizations, root, mgmt_ou, appstream_act_id)
 
         sbx = create_account(organizations, sbx_name, sbx_email)
 
         sbx_ou = create_ou_move_act(organizations, root, sbx_ou, sbx)
 
         responseData = {
-            "Appstream_Account_ID": appstream_act_id,
             "Sandbox_Account_ID": sbx,
             "Sandbox_OU": sbx_ou
         }
@@ -227,7 +217,13 @@ def create(event, context):
 
 def main(event, context):
     if event['RequestType'] == 'Create':
-        create(event, context)
+        #create(event, context)
+        responseData = {
+            "Sandbox_Account_ID": "771068296853",
+            "Sandbox_OU": "ou-l11v-akroap9p"
+        }
+        send(event, context, SUCCESS, responseData, "Create_Accounts_OUs")
+
         return
     elif event['RequestType'] == 'Update':
         responseData = {"message": "No updates were made to the accounts"}

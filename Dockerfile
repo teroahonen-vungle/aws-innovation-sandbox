@@ -1,7 +1,7 @@
 FROM centos
 
 ENV S3_BUCKET=dev-sandbox-bootstrap
-ENV LIB_NAME=dev-sandbox-bootstrap
+ENV LIB_NAME=dev-sandbox
 ENV VERSION=v1.0.0
 
 RUN dnf module -y reset nodejs && \

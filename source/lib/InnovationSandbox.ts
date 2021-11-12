@@ -23,19 +23,6 @@ export class InnovationSandbox extends cdk.Stack {
       bucketName: props["solutionBucket"] + '-' + this.region
     });
 
-    
-    
-
-
-    const mgmt_account_name = new cdk.CfnParameter(
-      this,
-      "Sandbox Management Account Name",
-      {
-        type: "String",
-        description: "Account Name for Appstream Management Account",
-      }
-    );
-
     const sbx_account_name = new cdk.CfnParameter(
       this,
       "Sandbox Account Name",
@@ -45,15 +32,7 @@ export class InnovationSandbox extends cdk.Stack {
       }
     );
 
-    const mgmt_email = new cdk.CfnParameter(
-      this,
-      "Sandbox Management Account Email",
-      {
-        type: "String",
-        description: "Email for Sandbox Management Account",
-      }
-    );
-
+    
     const sbx_email = new cdk.CfnParameter(this, "Sandbox Account Email", {
       type: "String",
       description: "Email for Sandbox Account",
@@ -63,15 +42,6 @@ export class InnovationSandbox extends cdk.Stack {
       type: "String",
       description: "OU Name for Sandbox Account",
     });
-
-    const mgmt_ou_name = new cdk.CfnParameter(
-      this,
-      "Sandbox Management OU Name",
-      {
-        type: "String",
-        description: "OU Name for Sandbox Management Account",
-      }
-    );
 
     const mgmt_cidr = new cdk.CfnParameter(
       this,
@@ -88,6 +58,15 @@ export class InnovationSandbox extends cdk.Stack {
       {
         type: "String",
         description: "VPC CIDR for Sandbox Account",
+      }
+    );
+
+    const mgmt_account_id = new cdk.CfnParameter(
+      this,
+      "Management Account ID",
+      {
+        type: "String",
+        description: "Sandbox Management Account ID",
       }
     );
 
@@ -182,23 +161,16 @@ export class InnovationSandbox extends cdk.Stack {
       {
         provider: cfn.CustomResourceProvider.lambda(l0),
         properties: {
-          Mgmt_Name: mgmt_account_name.valueAsString,
-          Mgmt_Email: mgmt_email.valueAsString,
           Sbx_Name: sbx_account_name.valueAsString,
           Sbx_Email: sbx_email.valueAsString,
-          Sbx_OU_Name: sbx_ou_name.valueAsString,
-          Mgmt_OU_Name: mgmt_ou_name.valueAsString,
-          Mgmt_CIDR: mgmt_cidr.valueAsString,
-          Sbx_CIDR: sbx_cidr.valueAsString,
-        
+          Sbx_OU_Name: sbx_ou_name.valueAsString
         },
       }
     );
 
    
-  
-   
-    var _Mgmt = create_account_ou.getAtt("Appstream_Account_ID").toString();
+    
+    var _Mgmt = mgmt_account_id.valueAsString;
     var _Sbx = create_account_ou.getAtt("Sandbox_Account_ID").toString();
     var _Sbx_OU = create_account_ou.getAtt("Sandbox_OU").toString();
     var _SbxCIDR = sbx_cidr.valueAsString;
@@ -263,7 +235,6 @@ export class InnovationSandbox extends cdk.Stack {
       {
         provider: cfn.CustomResourceProvider.lambda(l1),
         properties: {
-          Appstream_Account_ID: _Mgmt,
           Sandbox_Account_ID: _Sbx
         },
       }
@@ -538,6 +509,7 @@ export class InnovationSandbox extends cdk.Stack {
         provider: cfn.CustomResourceProvider.lambda(l5),
         properties: {
           Appstream_Account_ID: _Mgmt,
+          Sandbox_Account_ID: _Sbx,
           Tgw_ID: _Tgw_ID,
           Egress_Attach: _Egress_Attach_ID,
           Sbx_Attach: _Sbx_Attach_ID,

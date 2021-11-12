@@ -100,6 +100,11 @@ def create(event, context):
         s3_public_settings(appstream_act_id, credentials)
 
         logger.info("Running Management Stack")
+        tgw_id_details = get_transit_gateway_id_mgmt(credentials)
+        tgw_id = tgw_id_details[0]
+        egress_attach_id = tgw_id_details[1]
+        logger.info("Transit Gateway: "+tgw_id)
+        logger.info("Egress attach: "+egress_attach_id)
         run_stack(
             appstream_act_id, tb + "InnovationSandboxManagementAccount.template", credentials, [{
                 'ParameterKey': 'SbxAccountId',
@@ -113,17 +118,17 @@ def create(event, context):
                 'ParameterKey': 'SbxCidr',
                 'ParameterValue': sbx_cidr
             },
+            {
+                'ParameterKey': 'TgwId',
+                'ParameterValue': tgw_id
+            },
                 {
                     'ParameterKey': 'UUID',
                     'ParameterValue': str(uuid.uuid4()).replace('-', '')
                 }
-            ], 'InnovationSbxMgmtStack')
+            ], 'SbxMgmtStack-'+sbx_act_id)
 
-        tgw_id_details = get_transit_gateway_id_mgmt(credentials)
-
-        tgw_id = tgw_id_details[0]
-
-        egress_attach_id = tgw_id_details[1]
+        
 
         eip = get_elastic_ip_mgmt(credentials)
 
@@ -146,10 +151,11 @@ def create(event, context):
 def delete(event, context):
     props = event["ResourceProperties"]
     _appstream_act = props['Appstream_Account_ID']
+    _sbx_act = props['Sandbox_Account_ID']
     credentials = assume_role(_appstream_act)
 
     try:
-        delete_stack('InnovationSbxMgmtStack', credentials)
+        delete_stack('SbxMgmtStack-'+_sbx_act, credentials)
     except Exception as e:
         raise
 
