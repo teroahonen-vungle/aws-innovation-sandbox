@@ -1,0 +1,38 @@
+[
+  {
+      "ParameterKey": "SandboxManagementAccountName",
+      "ParameterValue": "sbxmanagement",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxManagementOUName",
+      "ParameterValue": "sbxmanagement",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxManagementAccountEmail",
+      "ParameterValue": "tero+sbxmanagement@calevala.com",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "SandboxManagementVPCCIDR",
+      "ParameterValue": "10.10.0.0/22",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "MgmtAccountID",
+      "ParameterValue": "-",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "MgmtOUID",
+      "ParameterValue": "-",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "TagEngTeam",
+      "ParameterValue": "DevOps",
+      "UsePreviousValue": false
+  }
+]
+
