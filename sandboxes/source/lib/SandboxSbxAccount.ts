@@ -4,6 +4,7 @@ import ec2 = require("@aws-cdk/aws-ec2");
 import iam = require("@aws-cdk/aws-iam");
 import cloudtrail = require("@aws-cdk/aws-cloudtrail");
 import s3 = require("@aws-cdk/aws-s3");
+import budget = require("@aws-cdk/aws-budgets");
 
 export class SandboxSbxAccount extends cdk.Stack {
   public readonly response: string;
@@ -38,9 +39,43 @@ export class SandboxSbxAccount extends cdk.Stack {
       type: "String",
       description: "SbxCidr"
     });
+    const sbx_subnet1 = new cdk.CfnParameter(
+      this,
+      "Subnet1",
+      {
+        type: "String",
+        description: "1nd subnet CIDR",
+      }
+    );
+
+    const sbx_subnet2 = new cdk.CfnParameter(
+      this,
+      "Subnet2",
+      {
+        type: "String",
+        description: "2nd subnet CIDR",
+      }
+    );
+
+    const CostsBucketName = new cdk.CfnParameter(this, "CostsBucketName", {
+      type: "String",
+      description: "CostsBucketName"
+    });
+    const budget_amount = new cdk.CfnParameter(
+      this,
+      "Budget",
+      {
+        type: "Number",
+        description: "Monthly budget in $",
+      }
+    );
+    const sbx_email = new cdk.CfnParameter(this, "SandboxAccountEmail", {
+      type: "String",
+      description: "Email for Sandbox Account",
+    });
 
     const vpc_sbx = new ec2.Vpc(this, "ISSBXVPC", {
-      cidr: "10.10.6.0/23",
+      cidr: "10.10.4.0/23",
       maxAzs: 1,
       subnetConfiguration: [
         {
@@ -276,5 +311,63 @@ export class SandboxSbxAccount extends cdk.Stack {
       resourceType: ec2.FlowLogResourceType.fromVpc(vpc_sbx),
       destination: ec2.FlowLogDestination.toS3(fl_bucket),
     });
+    
+    const costs_bucket = new s3.Bucket(this, "sandbox-costs", {
+      bucketName: CostsBucketName.valueAsString+"-"+SbxAccountId.valueAsString,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      serverAccessLogsBucket: fl_bucket_access_logs,
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicAcls: true,
+        blockPublicPolicy: true,
+        ignorePublicAcls:true
+      })
+    });
+
+    costs_bucket.addToResourcePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.DENY,
+      actions: ["s3:*"],
+      principals: [ new iam.AnyPrincipal],
+      resources:  ["arn:aws:s3:::" + costs_bucket.bucketName, "arn:aws:s3:::" + costs_bucket.bucketName+"/*"],
+      conditions:{
+        "Bool": {
+          "aws:SecureTransport": "false"
+      }
+      }                          
+        }));
+
+    const billingBudget = new budget.CfnBudget(this, 'sandbox-budget', {
+      budget: {
+        budgetName: "sandbox-budget",
+        budgetType: "COST",
+        timeUnit: "MONTHLY",
+        budgetLimit: { amount: budget_amount.valueAsNumber, unit: "USD" }
+      },
+      notificationsWithSubscribers: [{
+        notification: {
+          notificationType: "ACTUAL",
+          comparisonOperator: "GREATER_THAN",
+          threshold: 25 // percent
+        },subscribers: [{subscriptionType: "EMAIL", address: sbx_email.valueAsString}]
+        },{
+        notification: {
+          notificationType: "ACTUAL",
+          comparisonOperator: "GREATER_THAN",
+          threshold: 50 // percent
+        },subscribers: [{subscriptionType: "EMAIL", address: sbx_email.valueAsString}]
+        },{
+          notification: {
+            notificationType: "ACTUAL",
+            comparisonOperator: "GREATER_THAN",
+            threshold: 75 // percent
+        },subscribers: [{subscriptionType: "EMAIL", address: sbx_email.valueAsString}]
+        },{
+          notification: {
+            notificationType: "ACTUAL",
+            comparisonOperator: "GREATER_THAN",
+            threshold: 90 // percent
+        },subscribers: [{subscriptionType: "EMAIL", address: sbx_email.valueAsString}]
+      }]
+    })
+    billingBudget.node.addDependency(costs_bucket);
   }
 }

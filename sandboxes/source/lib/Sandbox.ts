@@ -55,7 +55,24 @@ export class Sandbox extends cdk.Stack {
       "Sandbox VPC CIDR",
       {
         type: "String",
-        description: "VPC CIDR for Sandbox Account",
+        description: "VPC CIDR for Sandbox",
+      }
+    );
+    const sbx_subnet1 = new cdk.CfnParameter(
+      this,
+      "SbxSubnet1CIDR",
+      {
+        type: "String",
+        description: "1st subnet CIDR",
+      }
+    );
+
+    const sbx_subnet2 = new cdk.CfnParameter(
+      this,
+      "SbxSubnet2CIDR",
+      {
+        type: "String",
+        description: "2nd subnet CIDR",
       }
     );
 
@@ -84,6 +101,41 @@ export class Sandbox extends cdk.Stack {
         description: "Eng_Team tag value.",
       }
     );
+    const scps = new cdk.CfnParameter(
+      this,
+      "SCPs",
+      {
+        type: "String",
+        description: "SCP ids to be attached to the sandbox.",
+      }
+    );
+
+    const mission_cloud_stack = new cdk.CfnParameter(
+      this,
+      "MissionCloudStack",
+      {
+        type: "String",
+        description: "SCP ids to be attached to the sandbox.",
+      }
+    );
+    const costs_bucket_name = new cdk.CfnParameter(
+      this,
+      "CostsBucketName",
+      {
+        type: "String",
+        description: "SCP ids to be attached to the sandbox.",
+      }
+    );
+    const budget_amount = new cdk.CfnParameter(
+      this,
+      "Budget",
+      {
+        type: "Number",
+        description: "Monthly budget in $",
+      }
+    );
+    
+
 
     // Create Accounts, OUs
 
@@ -455,10 +507,15 @@ export class Sandbox extends cdk.Stack {
         properties: {
           Management_Account_ID: _Mgmt,
           Sandbox_Account_ID: _Sbx,
+          Sandbox_Account_Email: sbx_email,
           Tgw_ID: _Tgw_ID,
           Sandbox_CIDR: sbx_cidr.valueAsString,
+          Subnet1: sbx_subnet1.valueAsString,
+          Subnet2: sbx_subnet2.valueAsString,
           Tag_Eng_Team: tag_eng_team.valueAsString,
-          Template_Base_Path: S3_Templates_Base_Path
+          CostsBucketName: costs_bucket_name.valueAsString,
+          Template_Base_Path: S3_Templates_Base_Path,
+          Budget: budget_amount.valueAsNumber
         },
       }
     );
@@ -624,15 +681,112 @@ export class Sandbox extends cdk.Stack {
     const attach_scp = new cfn.CustomResource(this, "Attach_SCPs", {
       provider: cfn.CustomResourceProvider.lambda(l6),
       properties: {
-        Sandbox_Account_ID: _Sbx,
         Sandbox_OU: _Sbx_OU,
-        SCPGD: cdk.Fn.sub("${AWS::StackName}_guardrails_scp"),
-        SCPNTWRK: cdk.Fn.sub("${AWS::StackName}_network_scp"),
-        Template_Base_Path: S3_Templates_Base_Path
+        SPC_IDs: scps.valueAsString,
+        
       },
     });
 
     attach_scp.node.addDependency(tgw_route_tables);
+
+
+    
+    // Mission cloud stack
+
+    const l7_role = new iam.Role(this, "l7role",{
+      assumedBy:new iam.ServicePrincipal('lambda.amazonaws.com')
+    });
+
+    const l7_role_policy = new iam.Policy(this, "Mission_Cloud_Stack_Policy", {
+      statements:[ new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: [cdk.Fn.sub("arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}*:*")],
+        actions: ["logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents" ]
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: ["arn:aws:iam::*:role/SandboxAdminExecutionRole"],
+        actions: ["sts:AssumeRole"]
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        // resources: [cdk.Fn.sub("arn:aws:organizations::${AWS::AccountId}:policy/*")],
+        resources: ["*"],
+        actions: ["organizations:CreatePolicy"]
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: [cdk.Fn.sub("arn:aws:organizations::${AWS::AccountId}:*/*")],
+        actions: ["organizations:AttachPolicy"]
+      })
+    ]
+    });
+
+    const l7_cfn_role_policy = l7_role_policy.node.defaultChild as iam.CfnPolicy;
+
+    l7_cfn_role_policy.addMetadata('cfn_nag', {
+      rules_to_suppress: [
+        {
+          id: 'W12',
+          reason: 'CreatePolicy action does not apply to specific resource'
+        },
+        {
+          id: 'W89',
+          reason: 'VPC Not setup yet - Default VPC is deleted'
+        },
+        {
+          id: 'W92',
+          reason: 'Setup Lambda - Concurrent executions not needed'
+        }
+      ]
+    });
+
+    l7_role_policy.attachToRole(l7_role);
+
+  
+
+    const l7 = new lambda.Function(this, "Mission_Cloud_Stack_Function", {
+      code: lambda.Code.fromBucket(solutionsBucket, props["solutionTradeMarkName"] + '/' + props["solutionVersion"] + '/Sandbox.zip'),
+      handler: "mission_cloud_stack.main",
+      timeout: cdk.Duration.minutes(15),
+      runtime: lambda.Runtime.PYTHON_3_8,
+      role:l7_role
+    });
+
+    const l7_cfn = l7.node.defaultChild as lambda.CfnFunction;
+
+    l7_cfn.addMetadata('cfn_nag', {
+      rules_to_suppress: [
+        {
+          id: 'W58',
+          reason: 'Lambda function already has permission to write CloudWatch Logs'
+        },
+        {
+          id: 'W89',
+          reason: 'VPC Not setup yet - Default VPC is deleted'
+        },
+        {
+          id: 'W92',
+          reason: 'Setup Lambda - Concurrent executions not needed'
+        }
+      ]
+    });
+
+
+    const mission_cloud = new cfn.CustomResource(this, "Run_Mission_Cloud_Stack", {
+      provider: cfn.CustomResourceProvider.lambda(l7),
+      properties: {
+        Account_ID: _Sbx,
+        Tag_Eng_Team: tag_eng_team.valueAsString,
+        Template: mission_cloud_stack,
+        CostsBucketName: costs_bucket_name.valueAsString 
+        
+      },
+    });
+
+    mission_cloud.node.addDependency(attach_scp);
 
     const mgmt_id_output = new cdk.CfnOutput(this, "Management-Account-ID", {
       value: _Mgmt,

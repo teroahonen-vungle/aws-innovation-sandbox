@@ -18,4 +18,9 @@ RUN cd /tmp/deployment && \
     chmod 777 ./build-s3-dist.sh && \
     ./build-s3-dist.sh ${S3_BUCKET} ${LIB_NAME} ${VERSION}
 
+RUN sed -i 's|"10.10.4.0/23"|{"Ref": "SbxCidr"}|' /tmp/deployment/regional-s3-assets/SandboxSbxAccount.template && \
+    sed -i 's|"10.10.4.0/24"|{"Ref": "Subnet1"}|' /tmp/deployment/regional-s3-assets/SandboxSbxAccount.template && \
+    sed -i 's|"10.10.5.0/24"|{"Ref": "Subnet2"}|' /tmp/deployment/regional-s3-assets/SandboxSbxAccount.template
+
+
 RUN mv /tmp/deployment /

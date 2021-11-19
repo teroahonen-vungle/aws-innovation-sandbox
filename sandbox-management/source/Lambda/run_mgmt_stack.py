@@ -92,6 +92,7 @@ def create(event, context):
         tag_engteam = props['Tag_Eng_Team']
         tb = props['Template_Base_Path']
         mgmt_cidr = props['Mgmt_CIDR']
+        costs_bucket = props['CostsBucketName']
         tags = {"Management_Account_ID": management_act_id, "Management_Account_Name": management_act_name,"Eng_Team": tag_engteam }
         credentials = assume_role(management_act_id)
 
@@ -106,6 +107,10 @@ def create(event, context):
             {
                 'ParameterKey': 'UUID',
                 'ParameterValue': str(uuid.uuid4()).replace('-', '')
+            },
+            {
+                'ParameterKey': 'CostsBucketName',
+                'ParameterValue': costs_bucket
             }
             ], 'SbxMgmtStack', tags)
 

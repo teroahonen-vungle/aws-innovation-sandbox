@@ -49,44 +49,43 @@ def create_scp_sbx(client, name, tb, scp_name):
 
 def create(event, context):
 
-    logger.info("Attaching SCPs")
+    logger.info("Creating SCPs")
     
 
     try:
 
         props = event["ResourceProperties"]
-
-        sbx_ou = props['Sandbox_OU']
-        ids = props['SPC_IDs']
+        scp_gd = props['SCPGD']
+        scp_ntwrk = props['SCPNTWRK']
+        tb = props['Template_Base_Path']
 
         client = boto3.client('organizations', config=config)
 
-        
-        logger.info("Attaching: "+ids)
+        scp_guardrails = create_scp_sbx(client, scp_gd, tb, scp_gd+'.json')
+        scp_network = create_scp_sbx(client, scp_ntwrk, tb, scp_ntwrk+'.json')
 
-        for id in ids.split(","):
-            try:
-	            client.attach_policy(PolicyId=id.strip(), TargetId=sbx_ou)
-            except Exception as ex:
-                logger.info(id+" already attached.")
-            
-        
-        logger.info("Attached Service Control Policies")
+        logger.info("scp_guardrails: "+scp_guardrails +" created.")
+        logger.info("scp_network: "+scp_network+" created.")
+
+        #client.attach_policy(PolicyId=scp_guardrails, TargetId=sbx_ou)
+        #client.attach_policy(PolicyId=scp_network, TargetId=sbx_ou)
+
+        logger.info("Created Service Control Policies")
 
         responseData = {
             "Message": "Sandbox SCPs Attached"
         }
 
-        send(event, context, SUCCESS, responseData, "Sbx_Attach_SCPs")
+        send(event, context, SUCCESS, responseData, "Sbx_Create_SCPs")
 
     except Exception as e:
         message = {'MESSAGE': 'Exception occurred while creating and attaching SCPs',
                               'FILE': __file__.split('/')[-1], 'METHOD': inspect.stack()[0][3], 'EXCEPTION': str(e), 'TRACE': traceback.format_exc()}
         logger.exception(message)
         errorResponseData = {
-            "Message": "Sandbox SCP Attachment Failed"
+            "Message": "Sandbox SCP Creation Failed"
         }
-        send(event, context, FAILED, errorResponseData, "Sbx_Attach_SCPs")
+        send(event, context, FAILED, errorResponseData, "Sbx_Create_SCPs")
 
 
 def main(event, context):
@@ -96,12 +95,12 @@ def main(event, context):
         return
     elif event['RequestType'] == 'Update':
         responseData = {"message": "No updates were made"}
-        send(event, context, SUCCESS, responseData, "Sbx_Attach_SCPs")
+        send(event, context, SUCCESS, responseData, "Sbx_Create_SCPs")
         return
     elif event['RequestType'] == 'Delete':
         responseData = {"message": "SCPs were not deleted. Please delete them manually"}
-        send(event, context, SUCCESS, responseData, "Sbx_Attach_SCPs")
+        send(event, context, SUCCESS, responseData, "Sbx_Create_SCPs")
         return
     else:
         responseData = {"message": "Unsupported opration"}
-        send(event, context, FAILED, responseData, "Sbx_Attach_SCPs")
+        send(event, context, FAILED, responseData, "Sbx_Create_SCPs")

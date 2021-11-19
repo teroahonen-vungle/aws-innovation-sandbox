@@ -155,5 +155,4 @@ rm -rf $staging_dist_dir
 echo "Moving Regional Assets to build_dist_dir"
 
 mv $template_dist_dir/SandboxNetworking.template $template_dist_dir/SandboxSbxAccount.template $template_dist_dir/SandboxTransitGatewaySetup.template $build_dist_dir
-cp $source_dir/service_control_policies/* $build_dist_dir
 

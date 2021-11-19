@@ -31,6 +31,11 @@ export class SandboxManagementAccount extends cdk.Stack {
       description: "UUID",
     });
 
+    const CostsBucketName = new cdk.CfnParameter(this, "CostsBucketName", {
+      type: "String",
+      description: "CostsBucketName"
+    });
+
     
 
    
@@ -129,5 +134,28 @@ export class SandboxManagementAccount extends cdk.Stack {
       resourceType: ec2.FlowLogResourceType.fromVpc(vpc),
       destination: ec2.FlowLogDestination.toS3(fl_bucket),
     });
+
+    const costs_bucket = new s3.Bucket(this, "sandbox-costs", {
+      bucketName: CostsBucketName.valueAsString,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      serverAccessLogsBucket: fl_bucket_access_logs,
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicAcls: true,
+        blockPublicPolicy: true,
+        ignorePublicAcls:true
+      })
+    });
+
+    costs_bucket.addToResourcePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.DENY,
+      actions: ["s3:*"],
+      principals: [ new iam.AnyPrincipal],
+      resources:  ["arn:aws:s3:::" + costs_bucket.bucketName, "arn:aws:s3:::" + costs_bucket.bucketName+"/*"],
+      conditions:{
+        "Bool": {
+          "aws:SecureTransport": "false"
+      }
+      }                          
+        }));
   }
 }

@@ -33,6 +33,16 @@
       "ParameterKey": "TagEngTeam",
       "ParameterValue": "DevOps",
       "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "MissionCloudStack",
+      "ParameterValue": "https://s3-us-west-2.amazonaws.com/stage-bootstrap.missioncloud.com/src/cloudfoundation.yml",
+      "UsePreviousValue": false
+  },
+  {
+      "ParameterKey": "CostsBucketName",
+      "ParameterValue": "sandbox-costs",
+      "UsePreviousValue": false
   }
 ]
 

@@ -84,6 +84,23 @@ export class SandboxManagement extends cdk.Stack {
       }
     );
 
+    const mission_cloud_stack = new cdk.CfnParameter(
+      this,
+      "MissionCloudStack",
+      {
+        type: "String",
+        description: "SCP ids to be attached to the sandbox.",
+      }
+    );
+    const costs_bucket_name = new cdk.CfnParameter(
+      this,
+      "CostsBucketName",
+      {
+        type: "String",
+        description: "SCP ids to be attached to the sandbox.",
+      }
+    );
+
     // Create Accounts, OUs
     const l0_role_policy = new iam.Policy(this, "Create_Account_OU_Role_Policy", {
       statements:[ 
@@ -315,11 +332,205 @@ export class SandboxManagement extends cdk.Stack {
           Management_Account_Name: mgmt_account_name.valueAsString,
           Mgmt_CIDR: _MgmtCIDR,
           Template_Base_Path: S3_Templates_Base_Path,
+          CostsBucketName: costs_bucket_name.valueAsString,
           Tag_Eng_Team: tag_eng_team.valueAsString
         },
       }
     );
 
     run_mgmt_stack.node.addDependency(delete_default_vpcs);
+
+    // Create SCPs
+
+    const l3_role = new iam.Role(this, "l6role",{
+      assumedBy:new iam.ServicePrincipal('lambda.amazonaws.com')
+    });
+
+    const l3_role_policy = new iam.Policy(this, "SBX_SCP_Role_Policy", {
+      statements:[ new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: [cdk.Fn.sub("arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}*:*")],
+        actions: ["logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents" ]
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: ["arn:aws:iam::*:role/SandboxAdminExecutionRole"],
+        actions: ["sts:AssumeRole"]
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        // resources: [cdk.Fn.sub("arn:aws:organizations::${AWS::AccountId}:policy/*")],
+        resources: ["*"],
+        actions: ["organizations:CreatePolicy"]
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: [cdk.Fn.sub("arn:aws:organizations::${AWS::AccountId}:*/*")],
+        actions: ["organizations:AttachPolicy"]
+      })
+    ]
+    });
+
+    const l3_cfn_role_policy = l3_role_policy.node.defaultChild as iam.CfnPolicy;
+
+    l3_cfn_role_policy.addMetadata('cfn_nag', {
+      rules_to_suppress: [
+        {
+          id: 'W12',
+          reason: 'CreatePolicy action does not apply to specific resource'
+        },
+        {
+          id: 'W89',
+          reason: 'VPC Not setup yet - Default VPC is deleted'
+        },
+        {
+          id: 'W92',
+          reason: 'Setup Lambda - Concurrent executions not needed'
+        }
+      ]
+    });
+
+    l3_role_policy.attachToRole(l3_role);
+
+  
+
+    const l3 = new lambda.Function(this, "SBX_SCP_Function", {
+      code: lambda.Code.fromBucket(solutionsBucket, props["solutionTradeMarkName"] + '/' + props["solutionVersion"] + '/Sandbox.zip'),
+      handler: "sbx_create_scp.main",
+      timeout: cdk.Duration.minutes(15),
+      runtime: lambda.Runtime.PYTHON_3_8,
+      role:l3_role
+    });
+
+    const l3_cfn = l3.node.defaultChild as lambda.CfnFunction;
+
+    l3_cfn.addMetadata('cfn_nag', {
+      rules_to_suppress: [
+        {
+          id: 'W58',
+          reason: 'Lambda function already has permission to write CloudWatch Logs'
+        },
+        {
+          id: 'W89',
+          reason: 'VPC Not setup yet - Default VPC is deleted'
+        },
+        {
+          id: 'W92',
+          reason: 'Setup Lambda - Concurrent executions not needed'
+        }
+      ]
+    });
+
+
+    const create_scp = new cfn.CustomResource(this, "Attach_SCPs", {
+      provider: cfn.CustomResourceProvider.lambda(l3),
+      properties: {
+        SCPGD: cdk.Fn.sub("sbx_guardrails_scp"),
+        SCPNTWRK: cdk.Fn.sub("sbx_network_controls_scp"),
+        Template_Base_Path: S3_Templates_Base_Path
+      },
+    });
+
+    create_scp.node.addDependency(run_mgmt_stack);
+
+     // Mission cloud stack
+
+     const l4_role = new iam.Role(this, "l4role",{
+      assumedBy:new iam.ServicePrincipal('lambda.amazonaws.com')
+    });
+
+    const l4_role_policy = new iam.Policy(this, "Mission_Cloud_Stack_Policy", {
+      statements:[ new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: [cdk.Fn.sub("arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}*:*")],
+        actions: ["logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents" ]
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: ["arn:aws:iam::*:role/SandboxAdminExecutionRole"],
+        actions: ["sts:AssumeRole"]
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        // resources: [cdk.Fn.sub("arn:aws:organizations::${AWS::AccountId}:policy/*")],
+        resources: ["*"],
+        actions: ["organizations:CreatePolicy"]
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: [cdk.Fn.sub("arn:aws:organizations::${AWS::AccountId}:*/*")],
+        actions: ["organizations:AttachPolicy"]
+      })
+    ]
+    });
+
+    const l4_cfn_role_policy = l4_role_policy.node.defaultChild as iam.CfnPolicy;
+
+    l4_cfn_role_policy.addMetadata('cfn_nag', {
+      rules_to_suppress: [
+        {
+          id: 'W12',
+          reason: 'CreatePolicy action does not apply to specific resource'
+        },
+        {
+          id: 'W89',
+          reason: 'VPC Not setup yet - Default VPC is deleted'
+        },
+        {
+          id: 'W92',
+          reason: 'Setup Lambda - Concurrent executions not needed'
+        }
+      ]
+    });
+
+    l4_role_policy.attachToRole(l4_role);
+
+  
+
+    const l4 = new lambda.Function(this, "Mission_Cloud_Stack_Function", {
+      code: lambda.Code.fromBucket(solutionsBucket, props["solutionTradeMarkName"] + '/' + props["solutionVersion"] + '/Sandbox.zip'),
+      handler: "mission_cloud_stack.main",
+      timeout: cdk.Duration.minutes(15),
+      runtime: lambda.Runtime.PYTHON_3_8,
+      role:l4_role
+    });
+
+    const l4_cfn = l4.node.defaultChild as lambda.CfnFunction;
+
+    l4_cfn.addMetadata('cfn_nag', {
+      rules_to_suppress: [
+        {
+          id: 'W58',
+          reason: 'Lambda function already has permission to write CloudWatch Logs'
+        },
+        {
+          id: 'W89',
+          reason: 'VPC Not setup yet - Default VPC is deleted'
+        },
+        {
+          id: 'W92',
+          reason: 'Setup Lambda - Concurrent executions not needed'
+        }
+      ]
+    });
+
+
+    const mission_cloud = new cfn.CustomResource(this, "Run_Mission_Cloud_Stack", {
+      provider: cfn.CustomResourceProvider.lambda(l4),
+      properties: {
+        Account_ID: _Mgmt,
+        Template: mission_cloud_stack,
+        Tag_Eng_Team: tag_eng_team.valueAsString
+        
+      },
+    });
+
+    mission_cloud.node.addDependency(create_scp);
+
   }
+
 }

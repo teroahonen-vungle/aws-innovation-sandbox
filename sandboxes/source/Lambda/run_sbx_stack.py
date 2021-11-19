@@ -90,12 +90,17 @@ def create(event, context):
 
         mgmt = props['Management_Account_ID']
         sbx = props['Sandbox_Account_ID']
+        sbx_account_email = props['Sandbox_Account_Email']
         tgw_id = props['Tgw_ID']
         tb = props['Template_Base_Path']
         sbx_cidr = props['Sandbox_CIDR']
         tag_engteam = props['Tag_Eng_Team']
-        
+        costs_bucket = props['CostsBucketName']
+        budget = props['Budget']
+        subnet1 = props['Subnet1']
+        subnet2 = props['Subnet2']
 
+        
         credentials_sbx = assume_role(sbx)
 
      
@@ -124,6 +129,26 @@ def create(event, context):
             {
                 'ParameterKey': 'SbxCidr',
                 'ParameterValue': sbx_cidr
+            },
+            {
+                'ParameterKey': 'Subnet1',
+                'ParameterValue': subnet1
+            },
+            {
+                'ParameterKey': 'Subnet2',
+                'ParameterValue': subnet2
+            },
+            {
+                'ParameterKey': 'Budget',
+                'ParameterValue': budget
+            },
+            {
+                'ParameterKey': 'SandboxAccountEmail',
+                'ParameterValue': sbx_account_email
+            },
+            {
+                'ParameterKey': 'CostsBucketName',
+                'ParameterValue': costs_bucket
             }
         ], 'SbxSBXStack', tags)
 

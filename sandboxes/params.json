@@ -6,38 +6,72 @@
     },
     {
         "ParameterKey": "SandboxAccountName",
-        "ParameterValue": "sbx21",
+        "ParameterValue": "sbx24",
         "UsePreviousValue": false
     },
     {
         "ParameterKey": "SandboxOUName",
-        "ParameterValue": "sbx21",
+        "ParameterValue": "sbx24",
         "UsePreviousValue": false
     },
     {
         "ParameterKey": "SandboxAccountEmail",
-        "ParameterValue": "tero+sbx21@calevala.com",
+        "ParameterValue": "tero+sbx24@calevala.com",
         "UsePreviousValue": false
     },
     {
         "ParameterKey": "SandboxVPCCIDR",
-        "ParameterValue": "10.10.6.0/23",
+        "ParameterValue": "10.10.10.0/23",
+        "UsePreviousValue": false
+    },
+    {
+        "ParameterKey": "SbxSubnet1CIDR",
+        "ParameterValue": "10.10.10.0/24",
+        "UsePreviousValue": false
+    },
+    {
+        "ParameterKey": "SbxSubnet2CIDR", 
+        "ParameterValue": "10.10.11.0/24",
         "UsePreviousValue": false
     },
     {
         "ParameterKey": "SbxAccountID",
-        "ParameterValue": "565099522733",
+        "ParameterValue": "-",
         "UsePreviousValue": false
     },
     {
         "ParameterKey": "SbxOUID",
-        "ParameterValue": "ou-l11v-cbcj9hp9",
+        "ParameterValue": "-",
         "UsePreviousValue": false
     },
     {
         "ParameterKey": "TagEngTeam",
         "ParameterValue": "DevOps",
         "UsePreviousValue": false
+    },
+    {
+        "ParameterKey": "SCPs",
+        "ParameterValue": "p-gcpjrm6m,p-91qxhvcl",
+        "UsePreviousValue": false
+    },
+    {
+        "ParameterKey": "MissionCloudStack",
+        "ParameterValue": "https://s3-us-west-2.amazonaws.com/stage-bootstrap.missioncloud.com/src/cloudfoundation.yml",
+        "UsePreviousValue": false
+    },
+    {
+        "ParameterKey": "CostsBucketName",
+        "ParameterValue": "sandbox-costs",
+        "UsePreviousValue": false
+    },
+    {
+        "ParameterKey": "Budget",
+        "ParameterValue": "10000",
+        "UsePreviousValue": false
     }
+
+    
+
+    
 ]
 
