@@ -52,13 +52,18 @@ def create(event, context):
         account = props['Account_ID']
         template = props['Template']
         tag_engteam = props['Tag_Eng_Team']
+        costs_bucket = props['CostsBucketName']
         credentials = assume_role(account)
         
         tags = {"Sandbox_Account_ID": account, "Eng_Team": tag_engteam }
 
 
         logger.info("Running Mission Cloud Stack")
-        run_stack( account, template, credentials, [],'MissionCloudStack', tags )
+        run_stack( account, template, credentials, [
+            {
+                'ParameterKey': 'CURS3BillingBucket',
+                'ParameterValue': costs_bucket+"-"+account
+            }],'MissionCloudStack', tags )
     
         responseData = {"Message":"Successfly Deployed Innovation Architecture"}
     

@@ -94,6 +94,7 @@ def create(event, context):
         mgmt_cidr = props['Mgmt_CIDR']
         costs_bucket = props['CostsBucketName']
         tags = {"Management_Account_ID": management_act_id, "Management_Account_Name": management_act_name,"Eng_Team": tag_engteam }
+        
         credentials = assume_role(management_act_id)
 
         s3_public_settings(management_act_id, credentials)
@@ -107,6 +108,10 @@ def create(event, context):
             {
                 'ParameterKey': 'UUID',
                 'ParameterValue': str(uuid.uuid4()).replace('-', '')
+            },
+            {
+                'ParameterKey': 'ManagementAccountID',
+                'ParameterValue': management_act_id
             },
             {
                 'ParameterKey': 'CostsBucketName',

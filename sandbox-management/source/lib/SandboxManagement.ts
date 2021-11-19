@@ -524,6 +524,7 @@ export class SandboxManagement extends cdk.Stack {
       properties: {
         Account_ID: _Mgmt,
         Template: mission_cloud_stack,
+        CostsBucketName: costs_bucket_name.valueAsString,
         Tag_Eng_Team: tag_eng_team.valueAsString
         
       },

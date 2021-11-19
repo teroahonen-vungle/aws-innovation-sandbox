@@ -24,6 +24,11 @@ export class SandboxManagementAccount extends cdk.Stack {
       description: "MgmtCidr"
     });
 
+    const AccountID = new cdk.CfnParameter(this, "ManagementAccountID", {
+      type: "String",
+      description: "MgmtCidr"
+    });
+
     // TODO: Add descriptions
 
     const _uuid = new cdk.CfnParameter(this, "UUID", {
@@ -136,7 +141,7 @@ export class SandboxManagementAccount extends cdk.Stack {
     });
 
     const costs_bucket = new s3.Bucket(this, "sandbox-costs", {
-      bucketName: CostsBucketName.valueAsString,
+      bucketName: CostsBucketName.valueAsString+"-"+AccountID.valueAsString,
       encryption: s3.BucketEncryption.S3_MANAGED,
       serverAccessLogsBucket: fl_bucket_access_logs,
       blockPublicAccess: new s3.BlockPublicAccess({
